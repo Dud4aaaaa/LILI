@@ -607,3 +607,12 @@ input[aria-invalid="true"] { border-color: var(--danger); }
 }
 
 [hidden] { display: none !important; }
+
+/* Busca: trecho encontrado e contagem */
+.capa h3 mark {
+  background: rgba(243, 217, 168, .9);
+  color: var(--ink);
+  border-radius: 3px;
+  padding: 0 .06em;
+}
+.busca-status { margin: 0; min-height: 20px; font-size: 13px; color: var(--muted); }

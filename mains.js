@@ -165,6 +165,7 @@ async function salvarLivro() {
     }
 
     livros.push(novo);
+    buscaBanco = null; // a busca refaz no navegador já com o livro novo
 
     ordenarLivros();
     salvarNoNavegador();
@@ -208,14 +209,160 @@ function atualizarNumeros() {
 }
 
 
+// =========================================================
+// BUSCA
+// - sem acento e sem maiúsculas ("sertao" acha "Sertão")
+// - várias palavras em qualquer ordem ("arado torto")
+// - tolera erro de digitação ("casmuro" acha "Casmurro")
+// - com conta: usa o índice do banco (função buscar_livros no Supabase)
+// =========================================================
+
+function normalizar(texto) {
+    return String(texto || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+}
+
+function palavrasDe(texto) {
+    return normalizar(texto).split(/[^a-z0-9]+/).filter(Boolean);
+}
+
+// Quantas letras precisam mudar para uma palavra virar a outra
+function distancia(a, b) {
+    if (Math.abs(a.length - b.length) > 2) return 99;
+    let antes = Array.from({ length: b.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= a.length; i++) {
+        const agora = [i];
+        for (let j = 1; j <= b.length; j++) {
+            agora[j] = Math.min(antes[j] + 1, agora[j - 1] + 1, antes[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        }
+        antes = agora;
+    }
+    return antes[b.length];
+}
+
+// Pontuação de um livro para o termo (0 = não combina)
+function pontuar(livro, termo) {
+    const nome = normalizar(livro.nome);
+    const q = normalizar(termo).trim();
+    if (!q) return 1;
+    if (nome.startsWith(q)) return 100;
+    if (nome.includes(q)) return 80;
+
+    const doTitulo = palavrasDe(livro.nome);
+    const buscadas = palavrasDe(termo);
+    let total = 0;
+    for (const p of buscadas) {
+        let melhor = 0;
+        for (const w of doTitulo) {
+            if (w.startsWith(p)) melhor = Math.max(melhor, 10);
+            else if (w.includes(p)) melhor = Math.max(melhor, 8);
+            else if (p.length >= 4) {
+                const d = distancia(p, w.slice(0, Math.max(p.length, Math.min(w.length, p.length + 1))));
+                if (d <= (p.length >= 7 ? 2 : 1)) melhor = Math.max(melhor, 5);
+            }
+        }
+        if (!melhor) return 0; // toda palavra buscada precisa aparecer
+        total += melhor;
+    }
+    return total;
+}
+
+function buscarLocal(termo) {
+    return livros
+        .map(function (l) { return { l: l, p: pontuar(l, termo) }; })
+        .filter(function (x) { return x.p > 0; })
+        .sort(function (a, b) { return b.p - a.p || new Date(b.l.data) - new Date(a.l.data); })
+        .map(function (x) { return x.l; });
+}
+
+// Resultado vindo do banco: { termo, ids } — vale enquanto o campo tiver o mesmo termo
+let buscaBanco = null;
+let bancoSemBusca = false; // a função ainda não existe no Supabase: busca só no navegador
+let esperaBusca;
+
+function agendarBusca() {
+    const termo = document.getElementById("busca").value.trim();
+    mostrarLivros(); // resposta imediata com a busca do navegador
+    clearTimeout(esperaBusca);
+    if (!termo || !nuvem() || bancoSemBusca) return;
+
+    esperaBusca = setTimeout(async function () {
+        const { data, error } = await LiliAuth.cliente.rpc("buscar_livros", { termo: termo });
+        if (error) {
+            // função ainda não criada no Supabase (rode supabase/busca.sql): segue só no navegador
+            bancoSemBusca = true;
+            console.warn("Busca no banco indisponível, usando a busca do navegador:", error.message);
+            return;
+        }
+        if (document.getElementById("busca").value.trim() !== termo) return; // a pessoa já digitou outra coisa
+        buscaBanco = { termo: termo, ids: data.map(function (l) { return l.id; }) };
+        mostrarLivros();
+    }, 250);
+}
+
+function livrosVisiveis(termo) {
+    if (!termo) return livros;
+    if (buscaBanco && buscaBanco.termo === termo) {
+        const porId = new Map(livros.map(function (l) { return [l.id, l]; }));
+        return buscaBanco.ids.map(function (id) { return porId.get(id); }).filter(Boolean);
+    }
+    return buscarLocal(termo);
+}
+
+// Título com o trecho buscado marcado (<mark>), ignorando acentos
+function tituloDestacado(nome, termo) {
+    const frag = document.createDocumentFragment();
+    const buscadas = palavrasDe(termo);
+    if (!buscadas.length) { frag.append(nome); return frag; }
+
+    // texto normalizado + de qual letra original veio cada letra
+    let norm = "";
+    const origem = [];
+    Array.from(nome).forEach(function (ch, i) {
+        const n = normalizar(ch);
+        for (const c of n) { norm += c; origem.push(i); }
+    });
+
+    const chars = Array.from(nome);
+    const marcar = new Array(chars.length).fill(false);
+    buscadas.forEach(function (p) {
+        let pos = norm.indexOf(p);
+        while (pos !== -1) {
+            for (let k = pos; k < pos + p.length; k++) marcar[origem[k]] = true;
+            pos = norm.indexOf(p, pos + p.length);
+        }
+    });
+
+    let i = 0;
+    while (i < chars.length) {
+        let j = i;
+        while (j < chars.length && marcar[j] === marcar[i]) j++;
+        const pedaco = chars.slice(i, j).join("");
+        if (marcar[i]) {
+            const m = document.createElement("mark");
+            m.textContent = pedaco;
+            frag.append(m);
+        } else frag.append(pedaco);
+        i = j;
+    }
+    return frag;
+}
+
+
 // ---------- MOSTRAR OS LIVROS ----------
 function mostrarLivros() {
     const lista = document.getElementById("listaLivros");
     if (!lista) return;
 
     const buscaCampo = document.getElementById("busca");
-    const termo = buscaCampo ? buscaCampo.value.trim().toLowerCase() : "";
-    const visiveis = livros.filter(l => l.nome.toLowerCase().includes(termo));
+    const termo = buscaCampo ? buscaCampo.value.trim() : "";
+    const visiveis = livrosVisiveis(termo);
+
+    const status = document.getElementById("buscaStatus");
+    if (status) {
+        status.textContent = termo && visiveis.length
+            ? visiveis.length + (visiveis.length === 1 ? " livro encontrado" : " livros encontrados")
+            : "";
+    }
 
     lista.innerHTML = "";
 
@@ -236,7 +383,7 @@ function mostrarLivros() {
         capa.style.setProperty("--cor", corDoLivro(livro.nome));
 
         const titulo = document.createElement("h3");
-        titulo.textContent = livro.nome;
+        titulo.appendChild(tituloDestacado(livro.nome, termo));
         capa.appendChild(titulo);
 
         const info = document.createElement("div");
@@ -407,7 +554,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         salvarLivro();
     });
 
-    document.getElementById("busca").addEventListener("input", mostrarLivros);
+    document.getElementById("busca").addEventListener("input", agendarBusca);
 
     iniciarModais();
 
