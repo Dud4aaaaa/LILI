@@ -27,6 +27,8 @@
         if (m.includes("already registered") || m.includes("already been registered")) return "Já existe uma conta com esse e-mail. Use a aba Entrar.";
         if (m.includes("password should be at least") || m.includes("password is too short")) return "A senha precisa ter pelo menos 6 caracteres.";
         if (m.includes("weak password") || m.includes("password is known")) return "Essa senha é fácil demais de adivinhar. Escolha outra.";
+        // Limite de e-mails do projeto (vale para o site todo, não para a pessoa)
+        if (m.includes("email rate limit")) return "O LILI atingiu o limite de e-mails de confirmação desta hora. Tente de novo mais tarde ou entre com o Google.";
         if (m.includes("rate limit") || m.includes("too many") || m.includes("security purposes")) return "Muitas tentativas seguidas. Espere um minuto e tente de novo.";
         if (m.includes("unable to validate email") || m.includes("invalid email")) return "Esse e-mail não parece válido.";
         if (m.includes("provider is not enabled") || m.includes("unsupported provider")) return "O login com Google ainda não foi ativado no Supabase.";
