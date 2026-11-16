@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-type="software">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LILI · Sua biblioteca de livros lidos</title>
+  <meta name="description" content="LILI guarda cada livro que você terminou: a data, a nota de 1 a 5 estrelas e a sua opinião, numa estante que fica salva no navegador.">
+  <meta name="page-type" content="software">
+  <meta name="site-kind" content="software">
+  <meta name="theme-color" content="#10232a">
+  <meta property="og:title" content="LILI · Sua biblioteca de livros lidos">
+  <meta property="og:description" content="Anote cada livro que você termina: a data, a nota e o que achou.">
+  <meta property="og:type" content="website">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wdth,wght@75..100,400..600&family=IBM+Plex+Mono:wght@400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="inicio.css">
+  <script>if (!matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.classList.add("pre");</script>
+  <script src="inicio.js" defer></script>
+</head>
+
+<body class="inicio">
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+  <!-- NAV: some ao descer, volta ao subir -->
+  <header class="nav" id="nav">
+    <nav class="nav-barra" aria-label="Principal">
+      <a class="nav-link" href="#como">Como funciona</a>
+      <a class="nav-link" href="#estante">A estante</a>
+      <a class="nav-entrar" href="main.html">Entrar</a>
+    </nav>
+  </header>
+
+  <main id="conteudo">
+    <!-- HERO: palco preso enquanto a página rola mais uma tela -->
+    <section class="hero" id="hero" data-enter aria-labelledby="nomeLili">
+      <div class="palco">
+
+        <!-- 1. Fundo: sala de leitura ao entardecer + luz do abajur -->
+        <div class="camada" data-prof="0.05" data-vel="0.06">
+          <div class="dentro c-fundo">
+            <div class="fundo-cor"></div>
+            <div class="fundo-luz"></div>
+          </div>
+        </div>
+
+        <!-- 2. Estante de longe -->
+        <div class="camada" data-prof="0.18" data-vel="0.16">
+          <div class="dentro c-longe">
+            <div class="fileira fileira-longe" data-n="46" data-h="7,12" data-w="0.9,1.6" data-dur="140"></div>
+            <div class="nevoa nevoa-longe"></div>
+          </div>
+        </div>
+
+        <!-- 3. Estante do meio -->
+        <div class="camada" data-prof="0.34" data-vel="0.32">
+          <div class="dentro c-meio">
+            <div class="fileira fileira-meio" data-n="30" data-h="15,24" data-w="1.6,2.8" data-dur="95"></div>
+            <div class="nevoa nevoa-meio"></div>
+          </div>
+        </div>
+
+        <!-- 4. Lili, o mascote, flutuando -->
+        <div class="camada camada-pilha" data-prof="0.58" data-vel="0.6">
+          <div class="dentro c-pilha">
+            <div class="pilha-sombra"></div>
+            <div class="pilha">
+              <img class="lili" src="assets/img/lili/lili-joinha.png" width="803" height="803" alt="Lili, o livro vermelho de óculos e tênis azul, fazendo joinha e piscando" decoding="async">
+              <img class="lili lili-alt" src="assets/img/lili/lili-oculos-escuros.png" width="376" height="376" alt="" aria-hidden="true" decoding="async">
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. Estante da frente -->
+        <div class="camada" data-prof="1" data-vel="1.25" data-cresce="1.38">
+          <div class="dentro c-frente">
+            <div class="fileira fileira-frente" data-n="22" data-h="30,46" data-w="3.4,5.6" data-dur="70"></div>
+            <div class="nevoa nevoa-frente"></div>
+          </div>
+        </div>
+
+        <!-- 6. Sombra para a leitura (parada) -->
+        <div class="sombra-leitura" aria-hidden="true"></div>
+
+        <!-- Véu que fecha a saída -->
+        <div class="veu" aria-hidden="true"></div>
+
+        <!-- 7. Texto e interface -->
+        <div class="hud hud-esq" aria-hidden="true">
+          <span data-relogio>--:--</span> · <span data-hoje></span><br>
+          Na sua estante: <span data-conta="livros">0</span> <span data-plural>livros</span>
+        </div>
+        <div class="hud hud-dir" aria-hidden="true">
+          Lidos em <span data-ano></span>: <span data-conta="ano">0</span>
+        </div>
+
+        <div class="hero-texto">
+          <h1 class="nome" id="nomeLili">
+            <span class="sr-only">LILI</span>
+            <span class="nome-letras" aria-hidden="true"><span>L</span><span>I</span><span>L</span><span>I</span></span>
+            <svg class="asterisco" viewBox="0 0 100 100" aria-hidden="true">
+              <path d="M50 4 L61 37 L96 38 L68 59 L78 93 L50 73 L22 93 L32 59 L4 38 L39 37 Z" fill="#c98a1b"/>
+            </svg>
+          </h1>
+
+          <div class="hero-lado">
+            <p class="hero-frase">
+              <span class="linha"><span>Anote cada livro que você termina:</span></span>
+              <span class="linha"><span>o dia, a nota de 1 a 5 estrelas</span></span>
+              <span class="linha"><span>e o que achou da história.</span></span>
+            </p>
+            <a class="pilula pilula-creme" href="main.html">
+              Montar minha estante
+              <span class="pilula-seta" aria-hidden="true">
+                <svg viewBox="0 0 20 20"><path d="M4 10h12M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <p class="dica" aria-hidden="true">[ role para ver como funciona ]</p>
+      </div>
+    </section>
+
+    <!-- FECHAMENTO -->
+    <section class="fecho" id="como" aria-labelledby="tituloComo">
+      <div class="wrap">
+        <p class="mono">[ como funciona ]</p>
+        <div class="fecho-topo">
+          <h2 id="tituloComo">Terminou um livro?<br><em>Ele vira um cartão na estante.</em></h2>
+          <img class="fecho-lili" src="assets/img/lili/lili-apaixonado.png" width="376" height="376" alt="Lili com olhos de coração, apaixonado por um livro" loading="lazy" decoding="async">
+        </div>
+
+        <dl class="dados">
+          <div><dt>Título</dt><dd>o nome do livro</dd></div>
+          <div><dt>Data</dt><dd>o dia em que terminou</dd></div>
+          <div><dt>Nota</dt><dd>de 1 a 5 ★</dd></div>
+          <div><dt>Opinião</dt><dd>o que ficou com você</dd></div>
+          <div><dt>Busca</dt><dd>por título</dd></div>
+          <div><dt>Guardado</dt><dd>neste navegador</dd></div>
+        </dl>
+
+        <div class="vitrine" id="estante" aria-label="Exemplo de estante">
+          <div class="mini" style="--cor:#256f82"><div class="mini-capa"><span>Dom Casmurro</span></div><p class="mini-nota">★★★★★</p><p class="mini-data">Lido em 02/10/2026</p></div>
+          <div class="mini" style="--cor:#8c3b3b"><div class="mini-capa"><span>A Hora da Estrela</span></div><p class="mini-nota">★★★★☆</p><p class="mini-data">Lido em 14/08/2026</p></div>
+          <div class="mini" style="--cor:#3f6f5a"><div class="mini-capa"><span>Grande Sertão: Veredas</span></div><p class="mini-nota">★★★☆☆</p><p class="mini-data">Lido em 01/05/2026</p></div>
+          <div class="mini" style="--cor:#2e4a6b"><div class="mini-capa"><span>Torto Arado</span></div><p class="mini-nota">★★★★☆</p><p class="mini-data">Lido em 09/03/2026</p></div>
+        </div>
+
+        <div class="fecho-acao">
+          <a class="pilula pilula-tinta" href="main.html">
+            Entrar na biblioteca
+            <span class="pilula-seta" aria-hidden="true">
+              <svg viewBox="0 0 20 20"><path d="M4 10h12M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </a>
+          <p>Leva um minuto: digite o título, escolha a data e dê a nota.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <div class="wrap rodape-linha mono">
+      <span>LILI<span class="estrela">★</span></span>
+      <span>Biblioteca de livros lidos</span>
+      <a class="link-rodape" href="main.html">Entrar</a>
+    </div>
+  </footer>
+
+  <div class="grao" aria-hidden="true"></div>
+</body>
+
+</html>

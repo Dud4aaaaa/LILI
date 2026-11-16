@@ -1,0 +1,10 @@
+# Arquivos de trabalho que não fazem parte do site
+.taste-skill/
+shots/
+backup/
+.claude/
+
+# Sistema
+Thumbs.db
+.DS_Store
+node_modules/

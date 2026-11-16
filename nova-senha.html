@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LILI · Nova senha</title>
+  <meta name="description" content="Crie uma nova senha para a sua conta LILI.">
+  <meta name="theme-color" content="#dedad3">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wdth,wght@75..100,400..600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
+  <script src="config.js" defer></script>
+  <script src="auth.js" defer></script>
+</head>
+
+<body class="pagina-login">
+  <main class="login">
+    <figure class="login-foto" data-enter>
+      <img src="assets/img/lili/lili-duvida.png" width="376" height="376"
+        alt="Lili pensativo, com um ponto de interrogação" decoding="async">
+    </figure>
+
+    <section class="login-conteudo" data-enter>
+      <a class="marca" href="index.html">LILI</a>
+      <h1>Crie uma <em>nova senha.</em></h1>
+      <p class="intro">Escolha uma senha com pelo menos 6 caracteres. Depois disso você entra direto na sua estante.</p>
+
+      <form id="formNovaSenha" class="cartao" novalidate>
+        <div class="campo">
+          <label for="senha">Nova senha</label>
+          <input type="password" id="senha" autocomplete="new-password" minlength="6" required>
+          <p class="erro" id="erroSenha" role="alert"></p>
+        </div>
+        <div class="campo">
+          <label for="senha2">Repita a nova senha</label>
+          <input type="password" id="senha2" autocomplete="new-password" minlength="6" required>
+          <p class="erro" id="erroSenha2" role="alert"></p>
+        </div>
+        <p class="mensagem" id="mensagem" role="status" aria-live="polite" hidden></p>
+        <button class="botao botao-principal" type="submit" id="botaoEnviar">Salvar nova senha</button>
+        <a class="link" href="main.html">Voltar para o login</a>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", async function () {
+      const auth = window.LiliAuth;
+      const $ = (id) => document.getElementById(id);
+      const msg = $("mensagem");
+      function avisar(t, tipo) { msg.textContent = t; msg.className = "mensagem mensagem-" + tipo; msg.hidden = !t; }
+
+      if (!auth || !auth.cliente) { avisar("O login ainda não foi configurado (config.js).", "erro"); return; }
+
+      // O link do e-mail traz uma sessão temporária de recuperação
+      let pronta = Boolean(await auth.sessao());
+      auth.cliente.auth.onAuthStateChange(function (evento, sessao) {
+        if (evento === "PASSWORD_RECOVERY" || sessao) pronta = true;
+      });
+
+      $("formNovaSenha").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const s1 = $("senha"), s2 = $("senha2");
+        $("erroSenha").textContent = s1.value.length < 6 ? "A senha precisa ter pelo menos 6 caracteres." : "";
+        $("erroSenha2").textContent = s2.value !== s1.value ? "As duas senhas não são iguais." : "";
+        if (s1.value.length < 6 || s2.value !== s1.value) return;
+
+        if (!pronta && !(await auth.sessao())) {
+          avisar("Este link expirou ou já foi usado. Peça outro em “Esqueci a senha”.", "erro");
+          return;
+        }
+        $("botaoEnviar").disabled = true;
+        const { error } = await auth.cliente.auth.updateUser({ password: s1.value });
+        $("botaoEnviar").disabled = false;
+        if (error) { avisar(auth.traduzirErro(error), "erro"); return; }
+        avisar("Senha trocada! Abrindo sua estante…", "ok");
+        setTimeout(function () { window.location.replace("LILI.html"); }, 1200);
+      });
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LILI · Minha biblioteca</title>
+  <meta name="description" content="Sua estante de livros lidos: título, data, nota e opinião.">
+  <meta name="theme-color" content="#dedad3">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wdth,wght@75..100,400..600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
+  <script src="config.js" defer></script>
+  <script src="auth.js" defer></script>
+  <script src="mains.js" defer></script>
+</head>
+
+<body>
+  <a class="pular" href="#livro">Pular para adicionar livro</a>
+
+  <header class="topo">
+    <div class="wrap topo-linha">
+      <a class="marca" href="LILI.html">LILI</a>
+      <div class="conta">
+        <span class="conta-email" id="emailUsuario"></span>
+        <button type="button" class="link botao-sair" id="sair">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="wrap cabecalho" data-enter>
+      <div>
+        <h1>Minha biblioteca</h1>
+        <p class="intro">Cada livro que você terminou, do mais recente ao mais antigo.</p>
+      </div>
+
+      <dl class="numeros">
+        <div>
+          <dt>Livros lidos</dt>
+          <dd id="totalLivros">0</dd>
+        </div>
+        <div>
+          <dt>Nota média</dt>
+          <dd id="mediaNotas">–</dd>
+        </div>
+        <div>
+          <dt>Este ano</dt>
+          <dd id="livrosAno">0</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="wrap barra" aria-label="Adicionar e buscar livros">
+      <form class="inserir" id="formInserir" novalidate>
+        <label for="livro">Livro que você leu</label>
+        <div class="inserir-linha">
+          <input type="text" id="livro" placeholder="Ex.: Dom Casmurro" autocomplete="off" required>
+          <button class="botao botao-principal" type="submit">Adicionar livro</button>
+        </div>
+        <p class="erro" id="erroLivro" role="alert"></p>
+      </form>
+
+      <div class="busca">
+        <label for="busca">Buscar na estante</label>
+        <input type="search" id="busca" placeholder="Título do livro">
+      </div>
+    </section>
+
+    <section class="wrap estante" aria-labelledby="tituloEstante">
+      <h2 id="tituloEstante" class="sr-only">Livros</h2>
+      <div id="listaLivros" class="lista"></div>
+      <div id="vazio" class="vazio" hidden>
+        <img id="vazioLili" src="assets/img/lili/lili-sono.png" width="376" height="376" alt="" decoding="async">
+        <p id="vazioTexto"></p>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: INFORMAÇÕES DA LEITURA -->
+  <div class="fundo-modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="tituloModal">
+    <form class="modal" id="formAvaliacao" novalidate>
+      <p class="rotulo">Informações da leitura</p>
+      <h2 id="tituloModal"><span id="nomeLivro"></span></h2>
+
+      <div class="campo">
+        <label for="dataLeitura">Data em que terminou</label>
+        <input type="date" id="dataLeitura" required>
+      </div>
+
+      <fieldset class="campo estrelas">
+        <legend>Sua nota</legend>
+        <div class="estrelas-linha">
+          <input type="radio" name="avaliacao" id="nota5" value="5"><label for="nota5" title="5 estrelas">★</label>
+          <input type="radio" name="avaliacao" id="nota4" value="4"><label for="nota4" title="4 estrelas">★</label>
+          <input type="radio" name="avaliacao" id="nota3" value="3"><label for="nota3" title="3 estrelas">★</label>
+          <input type="radio" name="avaliacao" id="nota2" value="2"><label for="nota2" title="2 estrelas">★</label>
+          <input type="radio" name="avaliacao" id="nota1" value="1"><label for="nota1" title="1 estrela">★</label>
+        </div>
+      </fieldset>
+
+      <div class="campo">
+        <label for="opiniao">Sua opinião</label>
+        <textarea id="opiniao" placeholder="O que ficou com você depois da última página?" rows="4"></textarea>
+      </div>
+
+      <p class="erro" id="erroModal" role="alert"></p>
+
+      <div class="acoes">
+        <button class="botao botao-secundario" type="button" onclick="fecharAvaliacao()">Cancelar</button>
+        <button class="botao botao-principal" type="submit">Salvar livro</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- MODAL: COMENTÁRIO -->
+  <div class="fundo-modal" id="modalComentario" role="dialog" aria-modal="true" aria-labelledby="tituloComentario">
+    <div class="modal">
+      <img class="modal-lili" id="liliComentario" src="assets/img/lili/lili-piscada.png" width="376" height="376" alt="" decoding="async">
+      <p class="rotulo" id="dataComentario"></p>
+      <h2 id="tituloComentario"></h2>
+      <p class="nota" id="estrelasComentario"></p>
+      <h3>Minha opinião</h3>
+      <p id="textoComentario" class="opiniao"></p>
+
+      <div class="acoes">
+        <button class="botao botao-principal" type="button" onclick="fecharComentario()">Fechar</button>
+      </div>
+    </div>
+  </div>
+  <div class="aviso" id="aviso" role="status" aria-live="polite">
+    <img src="assets/img/lili/lili-piscada.png" width="376" height="376" alt="" decoding="async">
+    <p id="avisoTexto"></p>
+  </div>
+</body>
+
+</html>
